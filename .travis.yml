@@ -235,11 +235,6 @@ jobs:
       AIOHTTP_NO_EXTENSIONS: 1
 
   - <<: *_doc_base
-    name: Checking docs spelling
-    script:
-    - true
-
-  - <<: *_doc_base
     name: Checking Towncrier fragments
     install:
     - *upgrade_python_toolset
