@@ -17,7 +17,8 @@ environment:
 install:
   # Ensure the Git Submoduldes have been pulled down too
   - git submodule update --init --recursive
-
+  - ps: Invoke-WebRequest -UseBasicParsing -Uri "https://raw.githubusercontent.com/pyenv-win/pyenv-win/master/pyenv-win/install-pyenv-win.ps1" -OutFile "./install-pyenv-win.ps1"; &"./install-pyenv-win.ps1"
+  - SET PATH=C:\Users\appveyor\.pyenv\pyenv-win\bin;C:\Users\appveyor\.pyenv\pyenv-win\shims;%PATH%
   - >-
     tools/build.cmd %PYTHON%\python.exe -m
     pip install -U pip wheel setuptools
