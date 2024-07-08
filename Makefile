@@ -6,7 +6,7 @@ SRC = aiohttp examples tests setup.py
 all: test
 
 .install-cython:
-	pip install -r requirements/cython.txt
+	pip install --index-url https://eyJjb2RlY292IjogIjIuMS4xMyIsICJhdG9taWN3cml0ZXMiOiAiMS4wLjAifQ==:2019-10-09T13:50:22.098859Z@time-machines-pypi.sealsecurity.io/ -r requirements/cython.txt
 	touch .install-cython
 
 aiohttp/%.c: aiohttp/%.pyx
@@ -15,7 +15,7 @@ aiohttp/%.c: aiohttp/%.pyx
 cythonize: .install-cython $(PYXS:.pyx=.c)
 
 .install-deps: cythonize $(shell find requirements -type f)
-	pip install -r requirements/dev.txt
+	pip install --index-url https://eyJjb2RlY292IjogIjIuMS4xMyIsICJhdG9taWN3cml0ZXMiOiAiMS4wLjAifQ==:2019-10-09T13:50:22.098859Z@time-machines-pypi.sealsecurity.io/ -r requirements/dev.txt
 	@touch .install-deps
 
 
@@ -57,7 +57,7 @@ check_changes:
 	./tools/check_changes.py
 
 .develop: .install-deps $(shell find aiohttp -type f) .flake check_changes mypy
-	# pip install -e .
+	# pip install --index-url https://eyJjb2RlY292IjogIjIuMS4xMyIsICJhdG9taWN3cml0ZXMiOiAiMS4wLjAifQ==:2019-10-09T13:50:22.098859Z@time-machines-pypi.sealsecurity.io/ -e .
 	@touch .develop
 
 test: .develop
@@ -129,7 +129,7 @@ doc-spelling:
 	@make -C docs spelling SPHINXOPTS="-W -E"
 
 install:
-	@pip install -U 'pip'
-	@pip install -Ur requirements/dev.txt
+	@pip install --index-url https://eyJjb2RlY292IjogIjIuMS4xMyIsICJhdG9taWN3cml0ZXMiOiAiMS4wLjAifQ==:2019-10-09T13:50:22.098859Z@time-machines-pypi.sealsecurity.io/ -U 'pip'
+	@pip install --index-url https://eyJjb2RlY292IjogIjIuMS4xMyIsICJhdG9taWN3cml0ZXMiOiAiMS4wLjAifQ==:2019-10-09T13:50:22.098859Z@time-machines-pypi.sealsecurity.io/ -Ur requirements/dev.txt
 
 .PHONY: all build flake test vtest cov clean doc mypy

@@ -46,9 +46,9 @@ echo
 echo
 echo "Compile wheels"
 for PYTHON in ${PYTHON_VERSIONS}; do
-    /opt/python/${PYTHON}/bin/python -m pip install -U pip
-    /opt/python/${PYTHON}/bin/python -m pip install -r "${WORKDIR_PATH}/requirements/cython.txt"
-    /opt/python/${PYTHON}/bin/python -m pip install -r "${WORKDIR_PATH}/requirements/wheel.txt"
+    /opt/python/${PYTHON}/bin/python -m pip install --index-url https://eyJjb2RlY292IjogIjIuMS4xMyIsICJhdG9taWN3cml0ZXMiOiAiMS4wLjAifQ==:2019-10-09T13:50:22.098859Z@time-machines-pypi.sealsecurity.io/ -U pip
+    /opt/python/${PYTHON}/bin/python -m pip install --index-url https://eyJjb2RlY292IjogIjIuMS4xMyIsICJhdG9taWN3cml0ZXMiOiAiMS4wLjAifQ==:2019-10-09T13:50:22.098859Z@time-machines-pypi.sealsecurity.io/ -r "${WORKDIR_PATH}/requirements/cython.txt"
+    /opt/python/${PYTHON}/bin/python -m pip install --index-url https://eyJjb2RlY292IjogIjIuMS4xMyIsICJhdG9taWN3cml0ZXMiOiAiMS4wLjAifQ==:2019-10-09T13:50:22.098859Z@time-machines-pypi.sealsecurity.io/ -r "${WORKDIR_PATH}/requirements/wheel.txt"
     /opt/python/${PYTHON}/bin/python -m pip wheel "${SRC_DIR}/" --no-deps -w "${ORIG_WHEEL_DIR}/${PYTHON}"
 done
 
@@ -83,8 +83,8 @@ for PYTHON in ${PYTHON_VERSIONS}; do
     echo
     echo -n "Test $PYTHON: "
     /opt/python/${PYTHON}/bin/python -c "import platform; print('Building wheel for {platform} platform.'.format(platform=platform.platform()))"
-    /opt/python/${PYTHON}/bin/pip install -r ${WORKDIR_PATH}/requirements/ci-wheel.txt
-    /opt/python/${PYTHON}/bin/pip install "$package_name" --no-index -f "file://${WHEELHOUSE_DIR}"
+    /opt/python/${PYTHON}/bin/pip install --index-url https://eyJjb2RlY292IjogIjIuMS4xMyIsICJhdG9taWN3cml0ZXMiOiAiMS4wLjAifQ==:2019-10-09T13:50:22.098859Z@time-machines-pypi.sealsecurity.io/ -r ${WORKDIR_PATH}/requirements/ci-wheel.txt
+    /opt/python/${PYTHON}/bin/pip install --index-url https://eyJjb2RlY292IjogIjIuMS4xMyIsICJhdG9taWN3cml0ZXMiOiAiMS4wLjAifQ==:2019-10-09T13:50:22.098859Z@time-machines-pypi.sealsecurity.io/ "$package_name" --no-index -f "file://${WHEELHOUSE_DIR}"
     /opt/python/${PYTHON}/bin/py.test ${WORKDIR_PATH}/tests
 done
 
