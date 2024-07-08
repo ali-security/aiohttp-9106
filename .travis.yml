@@ -12,7 +12,6 @@ python:
 - &py35 3.5
 - &py36 3.6
 - &py37 3.7
-- nightly
 - &pypy3 pypy3.5
 
 install:
