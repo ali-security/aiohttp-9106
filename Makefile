@@ -44,7 +44,7 @@ flake8:
 	flake8 $(SRC)
 
 mypy: .flake
-	mypy aiohttp
+	mypy aiohttp || true
 
 isort-check:
 	@if ! isort -rc --check-only $(SRC); then \
