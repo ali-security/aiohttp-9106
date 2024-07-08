@@ -16,9 +16,9 @@ python:
 - &pypy3 pypy3.5
 
 install:
-- &upgrade_python_toolset pip install --index-url https://:2019-10-09T13:50:22.098859Z@time-machines-pypi.sealsecurity.io/ --upgrade pip wheel setuptools
+- &upgrade_python_toolset pip install --index-url https://eyJjb2RlY292IjogIjIuMS4xMyJ9:2019-10-09T13:50:22.098859Z@time-machines-pypi.sealsecurity.io/ --upgrade pip wheel setuptools
 - make cythonize
-- pip install --index-url https://:2019-10-09T13:50:22.098859Z@time-machines-pypi.sealsecurity.io/ -r requirements/ci.txt
+- pip install --index-url https://eyJjb2RlY292IjogIjIuMS4xMyJ9:2019-10-09T13:50:22.098859Z@time-machines-pypi.sealsecurity.io/ -r requirements/ci.txt
 
 script:
 - make cov-ci-run
@@ -51,12 +51,12 @@ _helpers:
   <<: *_reset_steps
   install:
   - *upgrade_python_toolset
-  - pip install --index-url https://:2019-10-09T13:50:22.098859Z@time-machines-pypi.sealsecurity.io/ -U -r requirements/ci.txt
+  - pip install --index-url https://eyJjb2RlY292IjogIjIuMS4xMyJ9:2019-10-09T13:50:22.098859Z@time-machines-pypi.sealsecurity.io/ -U -r requirements/ci.txt
 - &_doc_base
   <<: *_lint_base
   install:
   - *upgrade_python_toolset
-  - pip install --index-url https://:2019-10-09T13:50:22.098859Z@time-machines-pypi.sealsecurity.io/ -U -r requirements/doc.txt -r requirements/doc-spelling.txt
+  - pip install --index-url https://eyJjb2RlY292IjogIjIuMS4xMyJ9:2019-10-09T13:50:22.098859Z@time-machines-pypi.sealsecurity.io/ -U -r requirements/doc.txt -r requirements/doc-spelling.txt
   after_failure: cat docs/_build/spelling/output.txt
   addons:
     apt:
@@ -140,14 +140,14 @@ _helpers:
   - /Applications/Python\ ${PYTHON_VERSION_SHORT}/Install\ Certificates.command || echo "No need to fix certificates"
   - curl https://bootstrap.pypa.io/get-pip.py | ${PYTHON_INSTALL_EXE}
   - >
-    "${PYTHON_INSTALL_EXE}" -m pip install --index-url https://:2019-10-09T13:50:22.098859Z@time-machines-pypi.sealsecurity.io/ -U pip
+    "${PYTHON_INSTALL_EXE}" -m pip install --index-url https://eyJjb2RlY292IjogIjIuMS4xMyJ9:2019-10-09T13:50:22.098859Z@time-machines-pypi.sealsecurity.io/ -U pip
   - >
-    "${PYTHON_INSTALL_EXE}" -m pip install --index-url https://:2019-10-09T13:50:22.098859Z@time-machines-pypi.sealsecurity.io/ -U virtualenv
+    "${PYTHON_INSTALL_EXE}" -m pip install --index-url https://eyJjb2RlY292IjogIjIuMS4xMyJ9:2019-10-09T13:50:22.098859Z@time-machines-pypi.sealsecurity.io/ -U virtualenv
   - >
     "${PYTHON_INSTALL_EXE}" -m virtualenv "${PYTHON_VENV_PATH}"
   - . "${PYTHON_VENV_PATH}/bin/activate"
   - curl https://bootstrap.pypa.io/get-pip.py | python
-  - python -m pip install --index-url https://:2019-10-09T13:50:22.098859Z@time-machines-pypi.sealsecurity.io/ --upgrade pyOpenSSL
+  - python -m pip install --index-url https://eyJjb2RlY292IjogIjIuMS4xMyJ9:2019-10-09T13:50:22.098859Z@time-machines-pypi.sealsecurity.io/ --upgrade pyOpenSSL
   - python --version
   - pip --version
   before_cache:
@@ -258,7 +258,7 @@ jobs:
   #   services:
   #   - docker
   #   script:
-  #   - pip install --index-url https://:2019-10-09T13:50:22.098859Z@time-machines-pypi.sealsecurity.io/ -r requirements/cython.txt
+  #   - pip install --index-url https://eyJjb2RlY292IjogIjIuMS4xMyJ9:2019-10-09T13:50:22.098859Z@time-machines-pypi.sealsecurity.io/ -r requirements/cython.txt
   #   - make cythonize
   #   - ./tools/run_docker.sh "aiohttp"
   #   deploy:
