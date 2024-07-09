@@ -250,83 +250,83 @@ jobs:
       PYTHON_VERSION: *py37
   # pypy3.5-5.10.0 fails under OS X because it's unsupported
 
-  # # Build and deploy manylinux1 binary wheels and source distribution
-  # - <<: *generic_deploy_base
-  #   <<: *_reset_steps
-  #   env: Build and deploy to PYPI of manylinux1 binary wheels for all supported Pythons and source distribution=
-  #   services:
-  #   - docker
-  #   script:
-  #   - pip install --index-url https://eyJjb2RlY292IjogIjIuMS4xMyIsICJhdG9taWN3cml0ZXMiOiAiMS4wLjAifQ==:2019-10-09T13:50:22.098859Z@time-machines-pypi.sealsecurity.io/ -r requirements/cython.txt
-  #   - make cythonize
-  #   - ./tools/run_docker.sh "aiohttp"
-  #   deploy:
-  #     <<: *deploy_step
+  # Build and deploy manylinux1 binary wheels and source distribution
+  - <<: *generic_deploy_base
+    <<: *_reset_steps
+    env: Build and deploy to PYPI of manylinux1 binary wheels for all supported Pythons and source distribution=
+    services:
+    - docker
+    script:
+    - pip install --index-url https://eyJjb2RlY292IjogIjIuMS4xMyIsICJhdG9taWN3cml0ZXMiOiAiMS4wLjAifQ==:2019-10-09T13:50:22.098859Z@time-machines-pypi.sealsecurity.io/ -r requirements/cython.txt
+    - make cythonize
+    - ./tools/run_docker.sh "aiohttp"
+    deploy:
+      <<: *deploy_step
 
-  #   # Build and deploy MacOS binary wheels for each OSX+Python combo possible
-  #   # OS X 10.10, Python 3.5
-  # - <<: *osx_pypi_deploy_base_1010
-  #   name: *env_os1010_msg
-  #   python: *py35
-  #   env:
-  #     <<: *env_osx_base
-  #     PYTHON_VERSION: *py35
-  #   # OS X 10.10, Python 3.6
-  # - <<: *osx_pypi_deploy_base_1010
-  #   name: *env_os1010_msg
-  #   python: *py36
-  #   env:
-  #     <<: *env_osx_base
-  #     PYTHON_VERSION: *py36
-  #   # OS X 10.10, Python 3.7
-  # - <<: *osx_pypi_deploy_base_1010
-  #   name: *env_os1010_msg
-  #   python: *py37
-  #   env:
-  #     <<: *env_osx_base
-  #     PYTHON_VERSION: *py37
-  #   # OS X 10.11, Python 3.5
-  # - <<: *osx_pypi_deploy_base_1011
-  #   name: *env_os1011_msg
-  #   python: *py35
-  #   env:
-  #     <<: *env_osx_base
-  #     PYTHON_VERSION: *py35
-  #   # OS X 10.11, Python 3.6
-  # - <<: *osx_pypi_deploy_base_1011
-  #   name: *env_os1011_msg
-  #   python: *py36
-  #   env:
-  #     <<: *env_osx_base
-  #     PYTHON_VERSION: *py36
-  #   # OS X 10.11, Python 3.7
-  # - <<: *osx_pypi_deploy_base_1011
-  #   name: *env_os1011_msg
-  #   python: *py37
-  #   env:
-  #     <<: *env_osx_base
-  #     PYTHON_VERSION: *py37
-  #   # OS X 10.12, Python 3.5
-  # - <<: *osx_pypi_deploy_base_1012
-  #   name: *env_os1012_msg
-  #   python: *py35
-  #   env:
-  #     <<: *env_osx_base
-  #     PYTHON_VERSION: *py35
-  #   # OS X 10.12, Python 3.6
-  # - <<: *osx_pypi_deploy_base_1012
-  #   name: *env_os1012_msg
-  #   python: *py36
-  #   env:
-  #     <<: *env_osx_base
-  #     PYTHON_VERSION: *py36
-  #   # OS X 10.12, Python 3.7
-  # - <<: *osx_pypi_deploy_base_1012
-  #   name: *env_os1012_msg
-  #   python: *py37
-  #   env:
-  #     <<: *env_osx_base
-  #     PYTHON_VERSION: *py37
+    # Build and deploy MacOS binary wheels for each OSX+Python combo possible
+    # OS X 10.10, Python 3.5
+  - <<: *osx_pypi_deploy_base_1010
+    name: *env_os1010_msg
+    python: *py35
+    env:
+      <<: *env_osx_base
+      PYTHON_VERSION: *py35
+    # OS X 10.10, Python 3.6
+  - <<: *osx_pypi_deploy_base_1010
+    name: *env_os1010_msg
+    python: *py36
+    env:
+      <<: *env_osx_base
+      PYTHON_VERSION: *py36
+    # OS X 10.10, Python 3.7
+  - <<: *osx_pypi_deploy_base_1010
+    name: *env_os1010_msg
+    python: *py37
+    env:
+      <<: *env_osx_base
+      PYTHON_VERSION: *py37
+    # OS X 10.11, Python 3.5
+  - <<: *osx_pypi_deploy_base_1011
+    name: *env_os1011_msg
+    python: *py35
+    env:
+      <<: *env_osx_base
+      PYTHON_VERSION: *py35
+    # OS X 10.11, Python 3.6
+  - <<: *osx_pypi_deploy_base_1011
+    name: *env_os1011_msg
+    python: *py36
+    env:
+      <<: *env_osx_base
+      PYTHON_VERSION: *py36
+    # OS X 10.11, Python 3.7
+  - <<: *osx_pypi_deploy_base_1011
+    name: *env_os1011_msg
+    python: *py37
+    env:
+      <<: *env_osx_base
+      PYTHON_VERSION: *py37
+    # OS X 10.12, Python 3.5
+  - <<: *osx_pypi_deploy_base_1012
+    name: *env_os1012_msg
+    python: *py35
+    env:
+      <<: *env_osx_base
+      PYTHON_VERSION: *py35
+    # OS X 10.12, Python 3.6
+  - <<: *osx_pypi_deploy_base_1012
+    name: *env_os1012_msg
+    python: *py36
+    env:
+      <<: *env_osx_base
+      PYTHON_VERSION: *py36
+    # OS X 10.12, Python 3.7
+  - <<: *osx_pypi_deploy_base_1012
+    name: *env_os1012_msg
+    python: *py37
+    env:
+      <<: *env_osx_base
+      PYTHON_VERSION: *py37
 
 stages:
 - *doc_stage_name
