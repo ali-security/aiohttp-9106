@@ -1,6 +1,6 @@
 """HTTP websocket server functional tests"""
-import sys
 import asyncio
+import sys
 
 import pytest
 
