@@ -285,7 +285,7 @@ class TestNormalizePathMiddleware:
         ],
     )
     async def test_open_redirects(
-        self, append_slash: bool, remove_slash: bool, aiohttp_client: Any
+        self, append_slash: bool, remove_slash: bool, aiohttp_client
     ) -> None:
         async def handle(request: web.Request) -> web.StreamResponse:
             pytest.fail(
