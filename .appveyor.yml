@@ -7,11 +7,11 @@ environment:
   PYTHONLEGACYWINDOWSSTDIO: "1"
   matrix:
     - PYTHON: "C:\\Python35"
-    - PYTHON: "C:\\Python35-x64"
-    - PYTHON: "C:\\Python36"
-    - PYTHON: "C:\\Python36-x64"
-    - PYTHON: "C:\\Python37"
-    - PYTHON: "C:\\Python37-x64"
+    # - PYTHON: "C:\\Python35-x64"
+    # - PYTHON: "C:\\Python36"
+    # - PYTHON: "C:\\Python36-x64"
+    # - PYTHON: "C:\\Python37"
+    # - PYTHON: "C:\\Python37-x64"
   MAKE: C:\MinGW\bin\mingw32-make.exe
 
 install:
@@ -20,8 +20,8 @@ install:
   - ps: Invoke-WebRequest -UseBasicParsing -Uri "https://raw.githubusercontent.com/pyenv-win/pyenv-win/master/pyenv-win/install-pyenv-win.ps1" -OutFile "./install-pyenv-win.ps1"; &"./install-pyenv-win.ps1"
   - SET PATH=C:\Users\appveyor\.pyenv\pyenv-win\bin;C:\Users\appveyor\.pyenv\pyenv-win\shims;%PATH%
   - pyenv install 3.5.4
+  - dir C:\Users\appveyor\.pyenv\pyenv-win\bin
   - >-
-    dir C:\Users\appveyor\.pyenv\pyenv-win\bin
     tools/build.cmd C:\Users\appveyor\.pyenv\pyenv-win\bin\python.exe -m pip install -U pip wheel setuptools
   - '%MAKE% cythonize'
   - "tools/build.cmd %PYTHON%\\python.exe -m pip install -r requirements/ci.txt"
