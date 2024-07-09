@@ -34,7 +34,8 @@ from typing import (  # noqa
     cast,
 )
 
-from yarl import URL, __version__ as yarl_version
+from yarl import URL
+from yarl import __version__ as yarl_version
 
 from . import hdrs
 from .abc import AbstractMatchInfo, AbstractRouter, AbstractView
