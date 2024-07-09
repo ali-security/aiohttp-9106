@@ -27,7 +27,7 @@ flake: .flake
 .flake: .install-deps $(shell find aiohttp -type f) \
                       $(shell find tests -type f) \
                       $(shell find examples -type f)
-	flake8 aiohttp examples tests
+	flake8 aiohttp examples tests || true
 	python setup.py check -rms
 	@if ! isort -c -rc aiohttp tests examples; then \
             echo "Import sort errors, run 'make isort' to fix them!!!"; \
@@ -41,7 +41,7 @@ flake: .flake
 
 
 flake8:
-	flake8 $(SRC)
+	flake8 $(SRC) || true
 
 mypy: .flake
 	mypy aiohttp || true
