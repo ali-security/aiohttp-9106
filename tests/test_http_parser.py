@@ -267,6 +267,25 @@ def test_request_chunked(parser) -> None:
     assert not upgrade
     assert isinstance(payload, streams.StreamReader)
 
+def test_request_te_chunked_with_content_length(parser) -> None:
+    text = (
+        b"GET /test HTTP/1.1\r\n"
+        b"content-length: 1234\r\n"
+        b"transfer-encoding: chunked\r\n\r\n"
+    )
+    if isinstance(parser, HttpRequestParserC):
+        with pytest.raises(
+            http_exceptions.BadHttpMessage,
+            match="unexpected content-length header",
+        ):
+            parser.feed_data(text)
+    
+    if isinstance(parser, HttpRequestParserPy):
+        with pytest.raises(
+            http_exceptions.BadHttpMessage,
+            match="Content-Length can't be present with Transfer-Encoding",
+        ):
+            parser.feed_data(text)
 
 def test_conn_upgrade(parser) -> None:
     text = (b'GET /test HTTP/1.1\r\n'
