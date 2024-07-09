@@ -1,7 +1,9 @@
 import abc
 import asyncio
 import base64
+import functools
 import hashlib
+import html
 import inspect
 import keyword
 import os
@@ -32,7 +34,7 @@ from typing import (  # noqa
     cast,
 )
 
-from yarl import URL
+from yarl import URL, __version__ as yarl_version
 
 from . import hdrs
 from .abc import AbstractMatchInfo, AbstractRouter, AbstractView
@@ -71,6 +73,14 @@ PATH_SEP = re.escape('/')
 _WebHandler = Callable[[Request], Awaitable[StreamResponse]]
 _ExpectHandler = Callable[[Request], Awaitable[None]]
 _Resolve = Tuple[Optional[AbstractMatchInfo], Set[str]]
+
+html_escape = functools.partial(html.escape, quote=True)
+
+
+def _quote_path(value: str) -> str:
+    if tuple(map(int, yarl_version.split(".")[:2])) < (1, 6):
+        value = value.replace("%", "%25")
+    return URL.build(path=value, encoded=False).raw_path
 
 
 class AbstractResource(Sized, Iterable['AbstractRoute']):
@@ -653,7 +663,7 @@ class StaticResource(PrefixResource):
         assert filepath.is_dir()
 
         relative_path_to_dir = filepath.relative_to(self._directory).as_posix()
-        index_of = "Index of /{}".format(relative_path_to_dir)
+        index_of = "Index of /{}".format(html_escape(relative_path_to_dir))
         h1 = "<h1>{}</h1>".format(index_of)
 
         index_list = []
@@ -661,7 +671,7 @@ class StaticResource(PrefixResource):
         for _file in sorted(dir_index):
             # show file url as relative to static path
             rel_path = _file.relative_to(self._directory).as_posix()
-            file_url = self._prefix + '/' + rel_path
+            quoted_file_url = _quote_path(self._prefix + '/' + rel_path)
 
             # if file is a directory, add '/' to the end of the name
             if _file.is_dir():
@@ -670,8 +680,8 @@ class StaticResource(PrefixResource):
                 file_name = _file.name
 
             index_list.append(
-                '<li><a href="{url}">{name}</a></li>'.format(url=file_url,
-                                                             name=file_name)
+                '<li><a href="{url}">{name}</a></li>'.format(url=quoted_file_url,
+                                                             name=html_escape(file_name))
             )
         ul = "<ul>\n{}\n</ul>".format('\n'.join(index_list))
         body = "<body>\n{}\n{}\n</body>".format(h1, ul)

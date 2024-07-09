@@ -3,6 +3,7 @@ import functools
 import os
 import pathlib
 import shutil
+import sys
 import tempfile
 from unittest import mock
 from unittest.mock import MagicMock
@@ -31,27 +32,35 @@ def tmp_dir_path(request):
 
 
 @pytest.mark.parametrize(
-    "show_index,status,prefix,data",
-    [pytest.param(False, 403, '/', None, id="index_forbidden"),
-     pytest.param(True, 200, '/',
+    "show_index,status,prefix,request_path,data",
+    [pytest.param(False, 403, '/', '/', None, id="index_forbidden"),
+     pytest.param(True, 200, '/', '/',
                   b'<html>\n<head>\n<title>Index of /.</title>\n'
                   b'</head>\n<body>\n<h1>Index of /.</h1>\n<ul>\n'
                   b'<li><a href="/my_dir">my_dir/</a></li>\n'
                   b'<li><a href="/my_file">my_file</a></li>\n'
                   b'</ul>\n</body>\n</html>',
                   id="index_root"),
-     pytest.param(True, 200, '/static',
+     pytest.param(True, 200, '/static', '/static',
                   b'<html>\n<head>\n<title>Index of /.</title>\n'
                   b'</head>\n<body>\n<h1>Index of /.</h1>\n<ul>\n'
                   b'<li><a href="/static/my_dir">my_dir/</a></li>\n'
                   b'<li><a href="/static/my_file">my_file</a></li>\n'
                   b'</ul>\n</body>\n</html>',
-                  id="index_static")])
+                  id="index_static"),
+    pytest.param(True, 200, '/static', '/static/my_dir',
+            b'<html>\n<head>\n<title>Index of /my_dir</title>\n</head>\n<body>\n<h1>'
+            b'Index of /my_dir</h1>\n<ul>\n<li><a href="/static/my_dir/my_file_in_dir">'
+            b'my_file_in_dir</a></li>\n</ul>\n</body>\n</html>',
+            id="index_subdir",
+        ),
+])
 async def test_access_root_of_static_handler(tmp_dir_path,
                                              aiohttp_client,
                                              show_index,
                                              status,
                                              prefix,
+                                             request_path,
                                              data) -> None:
     """
     Tests the operation of static file server.
@@ -78,7 +87,93 @@ async def test_access_root_of_static_handler(tmp_dir_path,
     client = await aiohttp_client(app)
 
     # Request the root of the static directory.
-    r = await client.get(prefix)
+    r = await client.get(request_path)
+    assert r.status == status
+
+    if data:
+        assert r.headers['Content-Type'] == "text/html; charset=utf-8"
+        read_ = (await r.read())
+        assert read_ == data
+
+
+@pytest.mark.skipif(
+    not sys.platform.startswith("linux"),
+    reason="Invalid filenames on some filesystems (like Windows)",
+)
+@pytest.mark.parametrize(
+    "show_index,status,prefix,request_path,data",
+    [
+        pytest.param(False, 403, "/", "/", None, id="index_forbidden"),
+        pytest.param(
+            True,
+            200,
+            "/",
+            "/",
+            b"<html>\n<head>\n<title>Index of /.</title>\n</head>\n<body>\n<h1>Index of"
+            b' /.</h1>\n<ul>\n<li><a href="/%3Cimg%20src=0%20onerror=alert(1)%3E.dir">&l'
+            b't;img src=0 onerror=alert(1)&gt;.dir/</a></li>\n<li><a href="/%3Cimg%20sr'
+            b'c=0%20onerror=alert(1)%3E.txt">&lt;img src=0 onerror=alert(1)&gt;.txt</a></l'
+            b"i>\n</ul>\n</body>\n</html>",
+        ),
+        pytest.param(
+            True,
+            200,
+            "/static",
+            "/static",
+            b"<html>\n<head>\n<title>Index of /.</title>\n</head>\n<body>\n<h1>Index of"
+            b' /.</h1>\n<ul>\n<li><a href="/static/%3Cimg%20src=0%20onerror=alert(1)%3E.'
+            b'dir">&lt;img src=0 onerror=alert(1)&gt;.dir/</a></li>\n<li><a href="/stat'
+            b'ic/%3Cimg%20src=0%20onerror=alert(1)%3E.txt">&lt;img src=0 onerror=alert(1)&'
+            b"gt;.txt</a></li>\n</ul>\n</body>\n</html>",
+            id="index_static",
+        ),
+        pytest.param(
+            True,
+            200,
+            "/static",
+            "/static/<img src=0 onerror=alert(1)>.dir",
+            b"<html>\n<head>\n<title>Index of /&lt;img src=0 onerror=alert(1)&gt;.dir</t"
+            b"itle>\n</head>\n<body>\n<h1>Index of /&lt;img src=0 onerror=alert(1)&gt;.di"
+            b'r</h1>\n<ul>\n<li><a href="/static/%3Cimg%20src=0%20onerror=alert(1)%3E.di'
+            b'r/my_file_in_dir">my_file_in_dir</a></li>\n</ul>\n</body>\n</html>',
+            id="index_subdir",
+        ),
+    ],
+)
+async def test_access_root_of_static_handler_xss(
+    tmp_path,
+    aiohttp_client,
+    show_index,
+    status,
+    prefix,
+    request_path,
+    data,
+) -> None:
+    # Tests the operation of static file server.
+    # Try to access the root of static file server, and make
+    # sure that correct HTTP statuses are returned depending if we directory
+    # index should be shown or not.
+    # Ensure that html in file names is escaped.
+    # Ensure that links are url quoted.
+    my_file = tmp_path / "<img src=0 onerror=alert(1)>.txt"
+    my_dir = tmp_path / "<img src=0 onerror=alert(1)>.dir"
+    my_dir.mkdir()
+    my_file_in_dir = my_dir / "my_file_in_dir"
+
+    with my_file.open("w") as fw:
+        fw.write("hello")
+
+    with my_file_in_dir.open("w") as fw:
+        fw.write("world")
+
+    app = web.Application()
+
+    # Register global static route:
+    app.router.add_static(prefix, str(tmp_path), show_index=show_index)
+    client = await aiohttp_client(app)
+
+    # Request the root of the static directory.
+    r = await client.get(request_path)
     assert r.status == status
 
     if data:
