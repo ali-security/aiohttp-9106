@@ -543,8 +543,13 @@ class StaticResource(PrefixResource):
             try:
                 if filename.startswith('/'):
                     filename = filename[1:]
-                filepath = self._directory.joinpath(filename).resolve()
-                if not self._follow_symlinks:
+                unresolved_path = self._directory.joinpath(filename)
+                if self._follow_symlinks:
+                    normalized_path = Path(os.path.normpath(str(unresolved_path)))
+                    normalized_path.relative_to(self._directory)
+                    filepath = normalized_path.resolve()
+                else:
+                    filepath = unresolved_path.resolve()
                     filepath.relative_to(self._directory)
             except (ValueError, FileNotFoundError):
                 # ValueError for case when path point to symlink
@@ -608,8 +613,13 @@ class StaticResource(PrefixResource):
                 # /static/\\machine_name\c$ or /static/D:\path
                 # where the static dir is totally different
                 raise HTTPForbidden()
-            filepath = self._directory.joinpath(filename).resolve()
-            if not self._follow_symlinks:
+            unresolved_path = self._directory.joinpath(filename)
+            if self._follow_symlinks:
+                normalized_path = Path(os.path.normpath(str(unresolved_path)))
+                normalized_path.relative_to(self._directory)
+                filepath = normalized_path.resolve()
+            else:
+                filepath = unresolved_path.resolve()
                 filepath.relative_to(self._directory)
         except (ValueError, FileNotFoundError) as error:
             # relatively safe

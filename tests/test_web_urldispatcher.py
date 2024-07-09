@@ -1,3 +1,4 @@
+import asyncio
 import functools
 import os
 import pathlib
@@ -112,6 +113,89 @@ async def test_follow_symlink(tmp_dir_path, aiohttp_client) -> None:
     r = await client.get('/my_symlink/my_file_in_dir')
     assert r.status == 200
     assert (await r.text()) == data
+
+async def test_follow_symlink_directory_traversal(tmp_path, aiohttp_client) -> None:
+    # Tests that follow_symlinks does not allow directory transversal
+    data = "private"
+
+    private_file = tmp_path / "private_file"
+    private_file.write_text(data)
+
+    safe_path = tmp_path / "safe_dir"
+    safe_path.mkdir()
+
+    app = web.Application()
+
+    # Register global static route:
+    app.router.add_static("/", str(safe_path), follow_symlinks=True)
+    client = await aiohttp_client(app)
+
+    await client.start_server()
+    # We need to use a raw socket to test this, as the client will normalize
+    # the path before sending it to the server.
+    reader, writer = await asyncio.open_connection(client.host, client.port)
+    writer.write(b"GET /../private_file HTTP/1.1\r\n\r\n")
+    response = await reader.readuntil(b"\r\n\r\n")
+    assert b"404 Not Found" in response
+    writer.close()
+    await client.close()
+
+
+async def test_follow_symlink_directory_traversal_after_normalization(tmp_path, aiohttp_client) -> None:
+    # Tests that follow_symlinks does not allow directory transversal
+    # after normalization
+    #
+    # Directory structure
+    # |-- secret_dir
+    # |   |-- private_file (should never be accessible)
+    # |   |-- symlink_target_dir
+    # |       |-- symlink_target_file (should be accessible via the my_symlink symlink)
+    # |       |-- sandbox_dir
+    # |           |-- my_symlink -> symlink_target_dir
+    #
+    secret_path = tmp_path / "secret_dir"
+    secret_path.mkdir()
+
+    # This file is below the symlink target and should not be reachable
+    private_file = secret_path / "private_file"
+    private_file.write_text("private")
+
+    symlink_target_path = secret_path / "symlink_target_dir"
+    symlink_target_path.mkdir()
+
+    sandbox_path = symlink_target_path / "sandbox_dir"
+    sandbox_path.mkdir()
+
+    # This file should be reachable via the symlink
+    symlink_target_file = symlink_target_path / "symlink_target_file"
+    symlink_target_file.write_text("readable")
+
+    my_symlink_path = sandbox_path / "my_symlink"
+    pathlib.Path(str(my_symlink_path)).symlink_to(str(symlink_target_path), True)
+
+    app = web.Application()
+
+    # Register global static route:
+    app.router.add_static("/", str(sandbox_path), follow_symlinks=True)
+    client = await aiohttp_client(app)
+
+    await client.start_server()
+    # We need to use a raw socket to test this, as the client will normalize
+    # the path before sending it to the server.
+    reader, writer = await asyncio.open_connection(client.host, client.port)
+    writer.write(b"GET /my_symlink/../private_file HTTP/1.1\r\n\r\n")
+    response = await reader.readuntil(b"\r\n\r\n")
+    assert b"404 Not Found" in response
+    writer.close()
+
+    reader, writer = await asyncio.open_connection(client.host, client.port)
+    writer.write(b"GET /my_symlink/symlink_target_file HTTP/1.1\r\n\r\n")
+    response = await reader.readuntil(b"\r\n\r\n")
+    assert b"200 OK" in response
+    response = await reader.readuntil(b"readable")
+    assert response == b"readable"
+    writer.close()
+    await client.close()
 
 
 @pytest.mark.parametrize('dir_name,filename,data', [
