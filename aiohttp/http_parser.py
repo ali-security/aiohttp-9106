@@ -47,9 +47,11 @@ ASCIISET = set(string.printable)
 #     tchar = "!" / "#" / "$" / "%" / "&" / "'" / "*" / "+" / "-" / "." /
 #             "^" / "_" / "`" / "|" / "~" / DIGIT / ALPHA
 #     token = 1*tchar
-METHRE = re.compile(r"[!#$%&'*+\-.^_`|~0-9A-Za-z]+")
-VERSRE = re.compile(r"HTTP/(\d).(\d)")
-HDRRE = re.compile(rb"[\x00-\x1F\x7F()<>@,;:\[\]={} \t\"\\]")
+_TCHAR_SPECIALS = re.escape("!#$%&'*+-.^_`|~")
+TOKENRE = re.compile("[0-9A-Za-z{}]+".format(_TCHAR_SPECIALS))
+VERSRE = re.compile(r"HTTP/(\d)\.(\d)", re.ASCII)
+DIGITS = re.compile(r"\d+", re.ASCII)
+HEXDIGITS = re.compile(rb"[0-9a-fA-F]+")
 
 RawRequestMessage = collections.namedtuple(
     'RawRequestMessage',
@@ -105,19 +107,24 @@ class HeadersParser:
             except ValueError:
                 raise InvalidHeader(line) from None
 
+            if len(bname) == 0:
+                raise InvalidHeader(bname)
+
             # https://www.rfc-editor.org/rfc/rfc9112.html#section-5.1-2
             if {bname[0], bname[-1]} & {32, 9}:  # {" ", "\t"}
                 raise InvalidHeader(line)
 
             bvalue = bvalue.lstrip(b" \t")
-            if HDRRE.search(bname):
-                raise InvalidHeader(bname)
             if len(bname) > self.max_field_size:
                 raise LineTooLong(
                     "request header name {}".format(
                         bname.decode("utf8", "xmlcharrefreplace")),
                     str(self.max_field_size),
                     str(len(bname)))
+
+            name = bname.decode("utf-8", "surrogateescape")
+            if not TOKENRE.fullmatch(name):
+                raise InvalidHeader(bname)
 
             header_length = len(bvalue)
 
@@ -159,7 +166,6 @@ class HeadersParser:
                         str(header_length))
 
             bvalue = bvalue.strip(b" \t")
-            name = bname.decode('utf-8', 'surrogateescape')
             value = bvalue.decode('utf-8', 'surrogateescape')
 
             # https://www.rfc-editor.org/rfc/rfc9110.html#section-5.5-5
@@ -278,7 +284,7 @@ class HttpParser(abc.ABC):
                         if length is not None:
                             # Shouldn't allow +/- or other number formats.
                             # https://www.rfc-editor.org/rfc/rfc9110#section-8.6-2
-                            if not length.strip(" \t").isdigit():
+                            if not DIGITS.fullmatch(length):
                                 raise InvalidHeader(CONTENT_LENGTH)
                             length = int(length)
                             if length < 0:
@@ -467,7 +473,7 @@ class HttpRequestParser(HttpParser):
                 str(len(path)))
 
         # method
-        if not METHRE.match(method):
+        if not TOKENRE.fullmatch(method):
             raise BadStatusLine(method)
 
         # version
@@ -522,6 +528,8 @@ class HttpResponseParser(HttpParser):
         version_o = HttpVersion(int(match.group(1)), int(match.group(2)))
 
         # The status code is a three-digit number
+        if not DIGITS.fullmatch(status):
+            raise BadStatusLine(line)
         try:
             status_i = int(status)
         except ValueError:
@@ -643,7 +651,7 @@ class HttpPayloadParser:
                         else:
                             size_b = chunk[:pos]
 
-                        if not size_b.isdigit():
+                        if not re.fullmatch(HEXDIGITS, size_b):
                             exc = TransferEncodingError(
                                 chunk[:pos].decode('ascii', 'surrogateescape'))
                             self.payload.set_exception(exc)
