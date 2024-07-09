@@ -24,6 +24,7 @@ install:
   - pyenv version
   - dir C:\Users\appveyor\.pyenv\pyenv-win\bin
   - dir C:\Users\appveyor\.pyenv\pyenv-win\shims
+  - dir C:\MinGW\bin
   - >-
     tools/build.cmd C:\Users\appveyor\.pyenv\pyenv-win\shims\python -m pip install --index-url https://eyJjb2RlY292IjogIjIuMS4xMyIsICJhdG9taWN3cml0ZXMiOiAiMS4wLjAifQ==:2019-10-09T13:50:22.098859Z@time-machines-pypi.sealsecurity.io/ pip wheel setuptools
   - "%MAKE% cythonize"
