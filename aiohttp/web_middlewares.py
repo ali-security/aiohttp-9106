@@ -90,9 +90,9 @@ def normalize_path_middleware(
             if merge_slashes:
                 paths_to_check.append(re.sub('//+', '/', path))
             if append_slash and not request.path.endswith('/'):
-                paths_to_check.append(path + '/')
+                paths_to_check.append(re.sub("^//+", "/", path + "/"))
             if remove_slash and request.path.endswith('/'):
-                paths_to_check.append(path[:-1])
+                paths_to_check.append(re.sub("^//+", "/", path[:-1]))
             if merge_slashes and append_slash:
                 paths_to_check.append(
                     re.sub('//+', '/', path + '/'))
@@ -101,6 +101,7 @@ def normalize_path_middleware(
                 paths_to_check.append(merged_slashes[:-1])
 
             for path in paths_to_check:
+                path = re.sub("^//+", "/", path)  # SECURITY: GHSA-v6wp-4m6f-gcjg
                 resolves, request = await _check_request_resolves(
                     request, path)
                 if resolves:
