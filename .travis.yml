@@ -115,7 +115,7 @@ _helpers:
   - ls -alh "${GIT_INSTALLER_VOLUME}"
   - sudo installer -verboseR -dumplog -pkg "${GIT_INSTALLER_PATH}" -target /
   - sudo hdiutil detach "${GIT_INSTALLER_VOLUME}"
-  - export PYTHON_VERSION_LONG_SUGGESTIONS=$(git ls-remote --sort -v:refname --tags git://github.com/python/cpython.git "${PYTHON_VERSION}*" "v${PYTHON_VERSION}*" | grep -v '\^{}$' | awk '{print$2}' | sed 's#^refs/tags/##;s#^v##' | grep -v '[abcepr]')
+  - export PYTHON_VERSION_LONG_SUGGESTIONS=$(git ls-remote --sort -v:refname --tags https://github.com/python/cpython.git "${PYTHON_VERSION}*" "v${PYTHON_VERSION}*" | grep -v '\^{}$' | awk '{print$2}' | sed 's#^refs/tags/##;s#^v##' | grep -v '[abcepr]')
   - export PYTHON_VERSION_LONG=$(find_last_macos_py $PYTHON_VERSION_LONG_SUGGESTIONS)
   - export PYTHON_VERSION_SHORT=$(echo ${PYTHON_VERSION_LONG} | awk -F. '{print$1"."$2}')
   - echo "Selected version vars are:"
