@@ -1,3 +1,5 @@
+image: Visual Studio 2013
+
 environment:
   PYPI_USER: __token__
   PYPI_PASSWD:
