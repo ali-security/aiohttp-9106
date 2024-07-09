@@ -21,6 +21,7 @@ install:
   - SET PATH=C:\Users\appveyor\.pyenv\pyenv-win\bin;C:\Users\appveyor\.pyenv\pyenv-win\shims;%PATH%
   - pyenv install 3.5.4
   - pyenv global 3.5.4
+  - pyenv version
   - dir C:\Users\appveyor\.pyenv\pyenv-win\bin
   - dir C:\Python35
   - >-
