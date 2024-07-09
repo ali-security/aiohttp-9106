@@ -329,8 +329,8 @@ jobs:
 
 stages:
 - *doc_stage_name
-# - test
-# - name: *stage_test_osx_name
+- test
+- name: *stage_test_osx_name
 - name: *deploy_stage_name
   # This will prevent deploy unless it's a tagged commit:
 
