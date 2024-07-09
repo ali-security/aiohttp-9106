@@ -14,6 +14,7 @@ from . import hdrs
 from .base_protocol import BaseProtocol
 from .helpers import NO_EXTENSIONS, BaseTimerContext
 from .http_exceptions import (
+    BadHttpMessage,
     BadStatusLine,
     ContentEncodingError,
     ContentLengthError,
@@ -47,8 +48,8 @@ ASCIISET = set(string.printable)
 #             "^" / "_" / "`" / "|" / "~" / DIGIT / ALPHA
 #     token = 1*tchar
 METHRE = re.compile(r"[!#$%&'*+\-.^_`|~0-9A-Za-z]+")
-VERSRE = re.compile(r'HTTP/(\d+).(\d+)')
-HDRRE = re.compile(rb'[\x00-\x1F\x7F()<>@,;:\[\]={} \t\\\\\"]')
+VERSRE = re.compile(r"HTTP/(\d).(\d)")
+HDRRE = re.compile(rb"[\x00-\x1F\x7F()<>@,;:\[\]={} \t\"\\]")
 
 RawRequestMessage = collections.namedtuple(
     'RawRequestMessage',
@@ -104,8 +105,11 @@ class HeadersParser:
             except ValueError:
                 raise InvalidHeader(line) from None
 
-            bname = bname.strip(b' \t')
-            bvalue = bvalue.lstrip()
+            # https://www.rfc-editor.org/rfc/rfc9112.html#section-5.1-2
+            if {bname[0], bname[-1]} & {32, 9}:  # {" ", "\t"}
+                raise InvalidHeader(line)
+
+            bvalue = bvalue.lstrip(b" \t")
             if HDRRE.search(bname):
                 raise InvalidHeader(bname)
             if len(bname) > self.max_field_size:
@@ -154,9 +158,13 @@ class HeadersParser:
                         str(self.max_field_size),
                         str(header_length))
 
-            bvalue = bvalue.strip()
+            bvalue = bvalue.strip(b" \t")
             name = bname.decode('utf-8', 'surrogateescape')
             value = bvalue.decode('utf-8', 'surrogateescape')
+
+            # https://www.rfc-editor.org/rfc/rfc9110.html#section-5.5-5
+            if "\n" in value or "\r" in value or "\x00" in value:
+                raise InvalidHeader(bvalue)
 
             headers.add(name, value)
             raw_headers.append((bname, bvalue))
@@ -268,10 +276,11 @@ class HttpParser(abc.ABC):
                         # payload length
                         length = msg.headers.get(CONTENT_LENGTH)
                         if length is not None:
-                            try:
-                                length = int(length)
-                            except ValueError:
+                            # Shouldn't allow +/- or other number formats.
+                            # https://www.rfc-editor.org/rfc/rfc9110#section-8.6-2
+                            if not length.strip(" \t").isdigit():
                                 raise InvalidHeader(CONTENT_LENGTH)
+                            length = int(length)
                             if length < 0:
                                 raise InvalidHeader(CONTENT_LENGTH)
 
@@ -386,6 +395,24 @@ class HttpParser(abc.ABC):
         upgrade = False
         chunked = False
 
+        # https://www.rfc-editor.org/rfc/rfc9110.html#section-5.5-6
+        # https://www.rfc-editor.org/rfc/rfc9110.html#name-collected-abnf
+        singletons = (
+            hdrs.CONTENT_LENGTH,
+            hdrs.CONTENT_LOCATION,
+            hdrs.CONTENT_RANGE,
+            hdrs.CONTENT_TYPE,
+            hdrs.ETAG,
+            hdrs.HOST,
+            hdrs.MAX_FORWARDS,
+            hdrs.SERVER,
+            hdrs.TRANSFER_ENCODING,
+            hdrs.USER_AGENT,
+        )
+        bad_hdr = next((h for h in singletons if len(headers.getall(h, ())) > 1), None)
+        if bad_hdr is not None:
+            raise BadHttpMessage("Duplicate '{}' header found.".format(bad_hdr))
+
         # keep-alive
         conn = headers.get(hdrs.CONNECTION)
         if conn:
@@ -422,7 +449,7 @@ class HttpRequestParser(HttpParser):
         # request line
         line = lines[0].decode('utf-8', 'surrogateescape')
         try:
-            method, path, version = line.split(None, 2)
+            method, path, version = line.split(maxsplit=2)
         except ValueError:
             raise BadStatusLine(line) from None
 
@@ -437,14 +464,10 @@ class HttpRequestParser(HttpParser):
             raise BadStatusLine(method)
 
         # version
-        try:
-            if version.startswith('HTTP/'):
-                n1, n2 = version[5:].split('.', 1)
-                version_o = HttpVersion(int(n1), int(n2))
-            else:
-                raise BadStatusLine(version)
-        except Exception:
-            raise BadStatusLine(version)
+        match = VERSRE.match(version)
+        if match is None:
+            raise BadStatusLine(line)
+        version_o = HttpVersion(int(match.group(1)), int(match.group(2)))
 
         # read headers
         (headers, raw_headers,
@@ -470,12 +493,12 @@ class HttpResponseParser(HttpParser):
     def parse_message(self, lines: List[bytes]) -> Any:
         line = lines[0].decode('utf-8', 'surrogateescape')
         try:
-            version, status = line.split(None, 1)
+            version, status = line.split(maxsplit=1)
         except ValueError:
             raise BadStatusLine(line) from None
 
         try:
-            status, reason = status.split(None, 1)
+            status, reason = status.split(maxsplit=1)
         except ValueError:
             reason = ''
 
@@ -613,13 +636,12 @@ class HttpPayloadParser:
                         else:
                             size_b = chunk[:pos]
 
-                        try:
-                            size = int(bytes(size_b), 16)
-                        except ValueError:
+                        if not size_b.isdigit():
                             exc = TransferEncodingError(
                                 chunk[:pos].decode('ascii', 'surrogateescape'))
                             self.payload.set_exception(exc)
-                            raise exc from None
+                            raise exc
+                        size = int(bytes(size_b), 16)
 
                         chunk = chunk[pos+2:]
                         if size == 0:  # eof marker
