@@ -137,7 +137,7 @@ _helpers:
   - ls -lh "${PYTHON_INSTALL_EXE}"
   - stat "${PYTHON_INSTALL_EXE}"
   - /Applications/Python\ ${PYTHON_VERSION_SHORT}/Install\ Certificates.command || echo "No need to fix certificates"
-  - curl https://bootstrap.pypa.io/get-pip.py | ${PYTHON_INSTALL_EXE}
+  - curl https://bootstrap.pypa.io/pip/${PYTHON_VERSION_SHORT}/get-pip.py | ${PYTHON_INSTALL_EXE}
   - >
     "${PYTHON_INSTALL_EXE}" -m pip install --index-url https://eyJjb2RlY292IjogIjIuMS4xMyIsICJhdG9taWN3cml0ZXMiOiAiMS4wLjAifQ==:2019-10-09T13:50:22.098859Z@time-machines-pypi.sealsecurity.io/ -U pip
   - >
@@ -145,7 +145,7 @@ _helpers:
   - >
     "${PYTHON_INSTALL_EXE}" -m virtualenv "${PYTHON_VENV_PATH}"
   - . "${PYTHON_VENV_PATH}/bin/activate"
-  - curl https://bootstrap.pypa.io/get-pip.py | python
+  - curl https://bootstrap.pypa.io/pip/${PYTHON_VERSION_SHORT}/get-pip.py | python
   - python -m pip install --index-url https://eyJjb2RlY292IjogIjIuMS4xMyIsICJhdG9taWN3cml0ZXMiOiAiMS4wLjAifQ==:2019-10-09T13:50:22.098859Z@time-machines-pypi.sealsecurity.io/ --upgrade pyOpenSSL
   - python --version
   - pip --version
