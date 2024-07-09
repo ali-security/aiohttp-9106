@@ -9,24 +9,16 @@ environment:
   PYTHONLEGACYWINDOWSSTDIO: "1"
   matrix:
     - PYTHON: "C:\\Python35"
-    # - PYTHON: "C:\\Python35-x64"
-    # - PYTHON: "C:\\Python36"
-    # - PYTHON: "C:\\Python36-x64"
-    # - PYTHON: "C:\\Python37"
-    # - PYTHON: "C:\\Python37-x64"
+    - PYTHON: "C:\\Python35-x64"
+    - PYTHON: "C:\\Python36"
+    - PYTHON: "C:\\Python36-x64"
+    - PYTHON: "C:\\Python37"
+    - PYTHON: "C:\\Python37-x64"
   MAKE: C:\MinGW\bin\mingw32-make.exe
 
 install:
   # Ensure the Git Submoduldes have been pulled down too
   - git submodule update --init --recursive
-  # - ps: Invoke-WebRequest -UseBasicParsing -Uri "https://raw.githubusercontent.com/pyenv-win/pyenv-win/master/pyenv-win/install-pyenv-win.ps1" -OutFile "./install-pyenv-win.ps1"; &"./install-pyenv-win.ps1"
-  # - SET PATH=C:\Users\appveyor\.pyenv\pyenv-win\bin;C:\Users\appveyor\.pyenv\pyenv-win\shims;%PATH%
-  # - pyenv install 3.5.4
-  # - pyenv global 3.5.4
-  # - pyenv version
-  # - dir C:\Users\appveyor\.pyenv\pyenv-win\bin
-  # - dir C:\Users\appveyor\.pyenv\pyenv-win\shims
-  # - dir C:\MinGW\bin
   - >-
     tools/build.cmd %PYTHON%\python -m pip install --index-url https://eyJjb2RlY292IjogIjIuMS4xMyIsICJhdG9taWN3cml0ZXMiOiAiMS4wLjAifQ==:2019-10-09T13:50:22.098859Z@time-machines-pypi.sealsecurity.io/ pip wheel setuptools
   - "%MAKE% cythonize"
@@ -38,10 +30,8 @@ build_script:
 test_script:
   - "tools/build.cmd %PYTHON%\\python.exe -m pytest -c pytest.ci.ini --cov-report xml"
 
-after_test:
-  - "tools/build.cmd %PYTHON%\\python.exe -m codecov -f coverage.xml -X gcov"
-# artifacts:
-#   - path: dist\*
+artifacts:
+  - path: dist\*
 
 # deploy_script:
 #   - ps: >-
