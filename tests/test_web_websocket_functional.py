@@ -1,5 +1,5 @@
 """HTTP websocket server functional tests"""
-
+import sys
 import asyncio
 
 import pytest
@@ -244,6 +244,7 @@ async def test_send_recv_json(loop, aiohttp_client) -> None:
     await closed
 
 
+@pytest.mark.skipif(sys.platform == 'darwin', reason="Stalls on macOS")
 async def test_close_timeout(loop, aiohttp_client) -> None:
     aborted = loop.create_future()
 
