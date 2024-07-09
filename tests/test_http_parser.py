@@ -270,7 +270,7 @@ def test_request_te_chunked_with_content_length(parser) -> None:
         b"content-length: 1234\r\n"
         b"transfer-encoding: chunked\r\n\r\n"
     )
-    if isinstance(parser, HttpRequestParserC):
+    if not isinstance(parser, HttpRequestParserPy):
         with pytest.raises(
             http_exceptions.BadHttpMessage,
             match="unexpected content-length header",
@@ -517,7 +517,7 @@ def test_invalid_name(parser) -> None:
     ),
 )
 def test_bad_headers(parser, hdr) -> None:
-    if isinstance(parser, HttpRequestParserC):
+    if not isinstance(parser, HttpRequestParserPy):
         return
     text = "POST / HTTP/1.1\r\n{}\r\n\r\n".format(hdr).encode()
     with pytest.raises(http_exceptions.InvalidHeader):
