@@ -25,7 +25,7 @@ install:
   - dir C:\Users\appveyor\.pyenv\pyenv-win\bin
   - dir C:\Users\appveyor\.pyenv\pyenv-win\shims
   - >-
-    tools/build.cmd C:\Users\appveyor\.pyenv\pyenv-win\shims\python.exe -m pip install -U pip wheel setuptools
+    tools/build.cmd C:\Users\appveyor\.pyenv\pyenv-win\shims\python -m pip install -U pip wheel setuptools
   - "%MAKE% cythonize"
   - "tools/build.cmd %PYTHON%\\python.exe -m pip install -r requirements/ci.txt"
 
