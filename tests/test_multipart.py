@@ -729,6 +729,53 @@ class TestMultipartReader:
         assert not second.at_eof()
 
 
+    async def test_read_form_default_encoding(self) -> None:
+        reader = aiohttp.MultipartReader(
+            {CONTENT_TYPE: 'multipart/form-data;boundary=":"'},
+            Stream(
+                b"--:\r\n"
+                b'Content-Disposition: form-data; name="_charset_"\r\n\r\n'
+                b"ascii"
+                b"\r\n"
+                b"--:\r\n"
+                b'Content-Disposition: form-data; name="field1"\r\n\r\n'
+                b"foo"
+                b"\r\n"
+                b"--:\r\n"
+                b"Content-Type: text/plain;charset=UTF-8\r\n"
+                b'Content-Disposition: form-data; name="field2"\r\n\r\n'
+                b"foo"
+                b"\r\n"
+                b"--:\r\n"
+                b'Content-Disposition: form-data; name="field3"\r\n\r\n'
+                b"foo"
+                b"\r\n"))
+        field1 = await reader.next()
+        assert field1.name == "field1"
+        assert field1.get_charset("default") == "ascii"
+        field2 = await reader.next()
+        assert field2.name == "field2"
+        assert field2.get_charset("default") == "UTF-8"
+        field3 = await reader.next()
+        assert field3.name == "field3"
+        assert field3.get_charset("default") == "ascii"
+
+    async def test_read_form_invalid_default_encoding(self) -> None:
+        reader = aiohttp.MultipartReader(
+            {CONTENT_TYPE: 'multipart/form-data;boundary=":"'},
+            Stream(
+                b"--:\r\n"
+                b'Content-Disposition: form-data; name="_charset_"\r\n\r\n'
+                b"this-value-is-too-long-to-be-a-charset"
+                b"\r\n"
+                b"--:\r\n"
+                b'Content-Disposition: form-data; name="field1"\r\n\r\n'
+                b"foo"
+                b"\r\n"))
+        with pytest.raises(RuntimeError, match="Invalid default charset"):
+            await reader.next()
+
+
 async def test_writer(writer) -> None:
     assert writer.size == 7
     assert writer.boundary == ':'
@@ -1013,6 +1060,25 @@ class TestMultipartWriter:
         part = writer._parts[0][0]
         assert part.headers[CONTENT_TYPE] == 'test/passed'
 
+    def test_set_content_disposition_after_append(self):
+        writer = aiohttp.MultipartWriter("form-data")
+        part = writer.append("some-data")
+        part.set_content_disposition("form-data", name="method")
+        assert 'name="method"' in part.headers[CONTENT_DISPOSITION]
+
+    def test_automatic_content_disposition(self):
+        writer = aiohttp.MultipartWriter("form-data")
+        writer.append_json(())
+        part = payload.StringPayload("foo")
+        part.set_content_disposition("form-data", name="second")
+        writer.append_payload(part)
+        writer.append("foo")
+
+        disps = tuple(p[0].headers[CONTENT_DISPOSITION] for p in writer._parts)
+        assert 'name="section-0"' in disps[0]
+        assert 'name="second"' in disps[1]
+        assert 'name="section-2"' in disps[2]
+
     def test_with(self) -> None:
         with aiohttp.MultipartWriter(boundary=':') as writer:
             writer.append('foo')
@@ -1067,7 +1133,6 @@ class TestMultipartWriter:
                         CONTENT_TYPE: 'text/python',
                     }
                 )
-            content_length = part.size
             await writer.write(stream)
 
         assert part.headers[CONTENT_TYPE] == 'text/python'
@@ -1080,9 +1145,7 @@ class TestMultipartWriter:
         assert headers == (
             b'--:\r\n'
             b'Content-Type: text/python\r\n'
-            b'Content-Disposition: attachments; filename="bug.py"\r\n'
-            b'Content-Length: %s'
-            b'' % (str(content_length).encode(),)
+            b'Content-Disposition: attachments; filename="bug.py"'
         )
 
     async def test_set_content_disposition_override(self, buf, stream):
@@ -1098,7 +1161,6 @@ class TestMultipartWriter:
                         CONTENT_TYPE: 'text/python',
                     }
                 )
-            content_length = part.size
             await writer.write(stream)
 
         assert part.headers[CONTENT_TYPE] == 'text/python'
@@ -1111,9 +1173,7 @@ class TestMultipartWriter:
         assert headers == (
             b'--:\r\n'
             b'Content-Type: text/python\r\n'
-            b'Content-Disposition: attachments; filename="bug.py"\r\n'
-            b'Content-Length: %s'
-            b'' % (str(content_length).encode(),)
+            b'Content-Disposition: attachments; filename="bug.py"'
         )
 
     async def test_reset_content_disposition_header(self, buf, stream):
@@ -1127,8 +1187,6 @@ class TestMultipartWriter:
                     headers={CONTENT_TYPE: 'text/plain'},
                 )
 
-            content_length = part.size
-
             assert CONTENT_DISPOSITION in part.headers
 
             part.set_content_disposition('attachments', filename='bug.py')
@@ -1141,9 +1199,7 @@ class TestMultipartWriter:
             b'--:\r\n'
             b'Content-Type: text/plain\r\n'
             b'Content-Disposition:'
-            b' attachments; filename="bug.py"; filename*=utf-8\'\'bug.py\r\n'
-            b'Content-Length: %s'
-            b'' % (str(content_length).encode(),)
+            b' attachments; filename="bug.py"; filename*=utf-8\'\'bug.py'
         )
 
 
