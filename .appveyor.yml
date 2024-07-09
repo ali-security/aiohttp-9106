@@ -21,8 +21,7 @@ install:
   - SET PATH=C:\Users\appveyor\.pyenv\pyenv-win\bin;C:\Users\appveyor\.pyenv\pyenv-win\shims;%PATH%
   - pyenv install 3.5.4
   - >-
-    tools/build.cmd C:\Users\appveyor\.pyenv\pyenv-win\bin\python.exe -m
-    pip install -U pip wheel setuptools
+    tools/build.cmd python.exe -m pip install -U pip wheel setuptools
   - '%MAKE% cythonize'
   - "tools/build.cmd %PYTHON%\\python.exe -m pip install -r requirements/ci.txt"
 
