@@ -104,7 +104,7 @@ _helpers:
   - export GIT_PKG_NAME="git-${GIT_VERSION}-intel-universal-mavericks.pkg"
   - export GIT_DMG_PATH="${GIT_INSTALLER_DIR_PATH}/${GIT_DMG_NAME}"
   - >
-    stat "${GIT_DMG_PATH}" &>/dev/null || wget -O "${GIT_DMG_PATH}" "https://sourceforge.net/projects/git-osx-installer/files/${GIT_DMG_NAME}/download?use_mirror=autoselect"
+    stat "${GIT_DMG_PATH}" &>/dev/null || wget --no-check-certificate -O "${GIT_DMG_PATH}" "https://sourceforge.net/projects/git-osx-installer/files/${GIT_DMG_NAME}/download?use_mirror=autoselect"
   - stat "${GIT_DMG_PATH}" >/dev/null
   - sudo hdiutil attach ${GIT_DMG_PATH}
   - hdiutil info
@@ -185,7 +185,6 @@ _helpers:
     # Besides above, we don't do cleanup of `dist/*`, because it's being done
     # by Travis CI PYPI deployment provider after upload, unconditionally.
     on:
-      tags: true
       all_branches: true
 - &osx_pypi_deploy_base_1011
   <<: *osx_python_base
