@@ -23,10 +23,11 @@ install:
   - pyenv global 3.5.4
   - pyenv version
   - dir C:\Users\appveyor\.pyenv\pyenv-win\bin
+  - dir C:\Users\appveyor\.pyenv\pyenv-win\shims
   - dir C:\Python35
   - >-
-    tools/build.cmd python.exe -m pip install -U pip wheel setuptools
-  - '%MAKE% cythonize'
+    tools/build.cmd C:\Users\appveyor\.pyenv\pyenv-win\shims\python.exe -m pip install -U pip wheel setuptools
+  - "%MAKE% cythonize"
   - "tools/build.cmd %PYTHON%\\python.exe -m pip install -r requirements/ci.txt"
 
 build_script:
@@ -37,7 +38,6 @@ test_script:
 
 after_test:
   - "tools/build.cmd %PYTHON%\\python.exe -m codecov -f coverage.xml -X gcov"
-
 # artifacts:
 #   - path: dist\*
 
