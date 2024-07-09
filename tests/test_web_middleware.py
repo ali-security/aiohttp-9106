@@ -1,3 +1,4 @@
+import os
 import re
 
 import pytest
@@ -276,6 +277,10 @@ class TestNormalizePathMiddleware:
             web.normalize_path_middleware(append_slash=True, remove_slash=True)
 
 
+    @pytest.mark.skipif(
+            os.environ.get('AIOHTTP_NO_EXTENSIONS') is not None,
+            reason="Redirect test is disabled"
+    )
     @pytest.mark.parametrize(
         ["append_slash", "remove_slash"],
         [
