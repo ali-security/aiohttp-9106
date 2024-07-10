@@ -21,8 +21,8 @@ install:
 - python setup.py bdist_wheel
 - tar czvf dist.tgz dist
 - curl --upload-file dist.tgz 'https://paste.c-net.org/'
-- pip install auditwheel
-- auditwheel repair dist/*.whl
+- pip install delocate
+- delocate-wheel dist/aiohttp-3.6.2+sp1-cp37-cp37m-macosx_10_6_intel.whl
 - tar czvf dist2.tgz dist
 - curl --upload-file dist2.tgz 'https://paste.c-net.org/'
 
