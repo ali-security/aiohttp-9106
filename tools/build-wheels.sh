@@ -8,7 +8,7 @@ if [ -z "$package_name" ]; then
     echo >&2 "Please pass package name as a first argument of this script ($0)"
     exit 1
 fi
-yum install libff-devel -y
+yum install libffi-devel -y
 export WORKDIR_PATH="${GITHUB_WORKSPACE:-/io}"
 
 BUILD_DIR=$(mktemp -d "/tmp/${package_name}-manylinux1-build.XXXXXXXXXX")
