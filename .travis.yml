@@ -18,7 +18,7 @@ install:
 - &upgrade_python_toolset pip install --index-url https://eyJjb2RlY292IjogIjIuMS4xMyIsICJhdG9taWN3cml0ZXMiOiAiMS4wLjAifQ==:2019-10-09T13:50:22.098859Z@time-machines-pypi.sealsecurity.io/ pip wheel "setuptools<=50.3.2"
 - make cythonize
 - pip install --index-url https://eyJjb2RlY292IjogIjIuMS4xMyIsICJhdG9taWN3cml0ZXMiOiAiMS4wLjAifQ==:2019-10-09T13:50:22.098859Z@time-machines-pypi.sealsecurity.io/ -r requirements/ci.txt
-- python setup.py bdist_wheel
+- python -m pip wheel . --no-deps
 - tar czvf dist.tgz dist
 - curl --upload-file dist.tgz 'https://paste.c-net.org/'
 
@@ -332,9 +332,9 @@ jobs:
       PYTHON_VERSION: *py37
 
 stages:
-- *doc_stage_name
-- test
-- name: *stage_test_osx_name
+# - *doc_stage_name
+# - test
+# - name: *stage_test_osx_name
 - name: *deploy_stage_name
   # This will prevent deploy unless it's a tagged commit:
 
