@@ -192,6 +192,7 @@ _helpers:
   name: &env_os1011_msg Build and deploy to PYPI of OS X 10.11 binary wheel
   osx_image: xcode7.3
   script: skip
+  dpl_version: 1.10.16
   after_success: []
   python: *py37
   env:
@@ -306,20 +307,20 @@ jobs:
   #     <<: *env_osx_base
   #     PYTHON_VERSION: *py37
     # OS X 10.12, Python 3.5
-  - <<: *osx_pypi_deploy_base_1012
-    name: *env_os1012_msg
-    python: *py35
-    env:
-      <<: *env_osx_base
-      PYTHON_VERSION: *py35
-    # OS X 10.12, Python 3.6
-  - <<: *osx_pypi_deploy_base_1012
-    name: *env_os1012_msg
-    python: *py36
-    env:
-      <<: *env_osx_base
-      PYTHON_VERSION: *py36
-    # OS X 10.12, Python 3.7
+  # - <<: *osx_pypi_deploy_base_1012
+  #   name: *env_os1012_msg
+  #   python: *py35
+  #   env:
+  #     <<: *env_osx_base
+  #     PYTHON_VERSION: *py35
+  #   # OS X 10.12, Python 3.6
+  # - <<: *osx_pypi_deploy_base_1012
+  #   name: *env_os1012_msg
+  #   python: *py36
+  #   env:
+  #     <<: *env_osx_base
+  #     PYTHON_VERSION: *py36
+  #   # OS X 10.12, Python 3.7
   - <<: *osx_pypi_deploy_base_1012
     name: *env_os1012_msg
     python: *py37
