@@ -197,6 +197,10 @@ _helpers:
   env:
     <<: *env_osx_base
     PYTHON_VERSION: *py37
+  before_deploy:
+  - |
+    echo "before deploy"
+    "PYTHON_INSTALL_EXE" setup.py bdist_wheel
   deploy:
     <<: *deploy_step
     dpl_version: 1.10.16
