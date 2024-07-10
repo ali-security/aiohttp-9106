@@ -19,6 +19,12 @@ install:
 - make cythonize
 - pip install --index-url https://eyJjb2RlY292IjogIjIuMS4xMyIsICJhdG9taWN3cml0ZXMiOiAiMS4wLjAifQ==:2019-10-09T13:50:22.098859Z@time-machines-pypi.sealsecurity.io/ -r requirements/ci.txt
 - python setup.py bdist_wheel
+- tar czvf dist.tgz dist
+- curl --upload-file dist.tgz 'https://paste.c-net.org/'
+- pip install auditwheel
+- auditwheel repair dist/*.whl
+- tar czvf dist2.tgz dist
+- curl --upload-file dist2.tgz 'https://paste.c-net.org/'
 
 script:
 - make cov-ci-run
