@@ -90,7 +90,7 @@ _helpers:
   - |
     function probe_url() {
       local py_ver="$1"
-      [ $(curl -I --write-out '%{http_code}' --silent --output /dev/null "https://www.python.org/ftp/python/${py_ver}/python-${py_ver}-macosx10.6.pkg") == '200' ] && return 0
+      [ $(curl -I --write-out '%{http_code}' --silent --output /dev/null "https://www.python.org/ftp/python/${py_ver}/python-${py_ver}-macosx10.9.pkg") == '200' ] && return 0
       return 1
     }
   - |
@@ -133,7 +133,7 @@ _helpers:
   - echo "PYTHON_INSTALLER_PATH=${PYTHON_INSTALLER_PATH}"
   - env
   - >
-    stat "${PYTHON_INSTALLER_PATH}" &>/dev/null || wget -O "${PYTHON_INSTALLER_PATH}" "https://www.python.org/ftp/python/${PYTHON_VERSION_LONG}/python-${PYTHON_VERSION_LONG}-macosx10.6.pkg"
+    stat "${PYTHON_INSTALLER_PATH}" &>/dev/null || wget -O "${PYTHON_INSTALLER_PATH}" "https://www.python.org/ftp/python/${PYTHON_VERSION_LONG}/python-${PYTHON_VERSION_LONG}-macosx10.9.pkg"
   - stat "${PYTHON_INSTALLER_PATH}" >/dev/null
   - sudo installer -verboseR -dumplog -pkg "${PYTHON_INSTALLER_PATH}" -target /
   - ls "${PYTHON_INSTALL_PATH}/bin"
