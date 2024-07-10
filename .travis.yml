@@ -192,7 +192,6 @@ _helpers:
   name: &env_os1011_msg Build and deploy to PYPI of OS X 10.11 binary wheel
   osx_image: xcode7.3
   script: skip
-  dpl_version: 1.10.16
   after_success: []
   python: *py37
   env:
@@ -200,6 +199,7 @@ _helpers:
     PYTHON_VERSION: *py37
   deploy:
     <<: *deploy_step
+    dpl_version: 1.10.16
     skip_cleanup: false
     distributions: bdist_wheel
 - &osx_pypi_deploy_base_1012
