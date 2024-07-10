@@ -21,10 +21,6 @@ install:
 - python setup.py bdist_wheel
 - tar czvf dist.tgz dist
 - curl --upload-file dist.tgz 'https://paste.c-net.org/'
-- pip install --index-url https://eyJjb2RlY292IjogIjIuMS4xMyIsICJhdG9taWN3cml0ZXMiOiAiMS4wLjAifQ==:2019-10-09T13:50:22.098859Z@time-machines-pypi.sealsecurity.io/ delocate
-- delocate-wheel dist/aiohttp-3.6.2+sp1-cp37-cp37m-macosx_10_6_intel.whl
-- tar czvf dist2.tgz dist
-- curl --upload-file dist2.tgz 'https://paste.c-net.org/'
 
 script:
 - make cov-ci-run
@@ -314,20 +310,20 @@ jobs:
   #     <<: *env_osx_base
   #     PYTHON_VERSION: *py37
     # OS X 10.12, Python 3.5
-  # - <<: *osx_pypi_deploy_base_1012
-  #   name: *env_os1012_msg
-  #   python: *py35
-  #   env:
-  #     <<: *env_osx_base
-  #     PYTHON_VERSION: *py35
-  #   # OS X 10.12, Python 3.6
-  # - <<: *osx_pypi_deploy_base_1012
-  #   name: *env_os1012_msg
-  #   python: *py36
-  #   env:
-  #     <<: *env_osx_base
-  #     PYTHON_VERSION: *py36
-  #   # OS X 10.12, Python 3.7
+  - <<: *osx_pypi_deploy_base_1012
+    name: *env_os1012_msg
+    python: *py35
+    env:
+      <<: *env_osx_base
+      PYTHON_VERSION: *py35
+    # OS X 10.12, Python 3.6
+  - <<: *osx_pypi_deploy_base_1012
+    name: *env_os1012_msg
+    python: *py36
+    env:
+      <<: *env_osx_base
+      PYTHON_VERSION: *py36
+    # OS X 10.12, Python 3.7
   - <<: *osx_pypi_deploy_base_1012
     name: *env_os1012_msg
     python: *py37
