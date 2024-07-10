@@ -1,19 +1,17 @@
 #!/bin/bash
-if [ -n "$DEBUG" ]
-then
-  set -x
+if [ -n "$DEBUG" ]; then
+    set -x
 fi
 
 package_name="$1"
-if [ -z "$package_name" ]
-then
-    >&2 echo "Please pass package name as a first argument of this script ($0)"
+if [ -z "$package_name" ]; then
+    echo >&2 "Please pass package name as a first argument of this script ($0)"
     exit 1
 fi
-
+yum install libff-devel -y
 export WORKDIR_PATH="${GITHUB_WORKSPACE:-/io}"
 
-BUILD_DIR=`mktemp -d "/tmp/${package_name}-manylinux1-build.XXXXXXXXXX"`
+BUILD_DIR=$(mktemp -d "/tmp/${package_name}-manylinux1-build.XXXXXXXXXX")
 ORIG_WHEEL_DIR="${BUILD_DIR}/original-wheelhouse"
 SRC_DIR="${BUILD_DIR}/src"
 WHEELHOUSE_DIR="${WORKDIR_PATH}/dist"
@@ -26,7 +24,7 @@ PYTHON_VERSIONS="cp35-cp35m cp36-cp36m cp37-cp37m"
 # Avoid creation of __pycache__/*.py[c|o]
 export PYTHONDONTWRITEBYTECODE=1
 
-arch=`uname -m`
+arch=$(uname -m)
 
 echo
 echo
